@@ -107,7 +107,7 @@ body.no-scroll{overflow:hidden !important}
 .elemento-card.estado-proximo{border-left-color:var(--warning)}
 .elemento-card.estado-aldia{border-left-color:var(--success)}
 .card-main{flex:1;min-width:0}
-.card-main strong{font-size:14px;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-main strong{font-size:14px;font-weight:700;display:block;line-height:1.35;word-break:break-word;overflow-wrap:anywhere}
 .card-meta{font-size:12.5px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .card-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
 .card-actions .btn{padding:7px 10px;font-size:12px}
@@ -171,10 +171,10 @@ code{background:var(--border-soft);padding:1px 5px;border-radius:6px;border:1px 
 /* Modal */
 /* Modal — centrado y a la vista; si el teclado reduce la vista, sube y queda scrollable */
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%);display:flex;justify-content:center;align-items:center;z-index:1000;padding:16px;padding-bottom:max(16px, env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;animation:fadeIn .2s}
-.modal.keyboard-open{align-items:flex-start;top:var(--kb-top,0px);height:calc(var(--kb-h, 100dvh) - var(--kb-top,0px));bottom:auto;padding-top:max(10px, env(safe-area-inset-top));padding-bottom:14px}
+.modal.keyboard-open{align-items:flex-start;padding:calc(var(--kb-top,0px) + 16px) 16px calc(var(--kb-top,0px) + 120px);padding-left:clamp(16px, 5vw, 40px);padding-right:clamp(16px, 5vw, 40px)}
 .modal input,.modal textarea,.modal select{pointer-events:auto !important;user-select:text !important;-webkit-user-select:text !important}
 .modal-content{background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:560px;max-height:none;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:modalIn .3s var(--ease);overflow:hidden;margin:auto}
-.modal.keyboard-open .modal-content{max-height:calc(var(--kb-h, 100dvh) - var(--kb-top,0px) - 24px);margin:0 auto}
+.modal.keyboard-open .modal-content{max-height:calc(var(--kb-h, 100dvh) - var(--kb-top,0px) - 150px);margin:0 auto}
 .modal-large{max-width:680px}
 .modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,white, #fcfdff)}
 .modal-header h3{font-size:16px;font-weight:800;letter-spacing:-.01em;word-break:break-word}
