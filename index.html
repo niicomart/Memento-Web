@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Memento">
+  <meta name="description" content="Memento — organizador personal de vencimientos y mantenimientos. Funciona 100% offline.">
+  <title>Memento</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <img src="icons/icon-192.png" alt="Memento" class="brand-logo" width="40" height="40">
+        <h1>Memento</h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-icon" id="btnTema" title="Cambiar a tema oscuro">☾</button>
+      </div>
+    </header>
+
+    <div class="search-row">
+      <div class="search-box">
+        <input type="text" id="buscadorGlobal" placeholder="Buscar categorías, elementos o notas…">
+        <span class="search-icon">⌕</span>
+      </div>
+    </div>
+
+    <main class="main">
+      <!-- Breadcrumbs fluidos -->
+      <div id="breadcrumbs" style="font-size:13px;color:var(--muted);margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"></div>
+
+      <!-- Aviso de migración de estructura (aparece solo si se convirtieron datos viejos) -->
+      <div id="avisoMigracion" class="aviso hidden"></div>
+
+      <!-- Aviso de copia de seguridad pendiente (más de 20 días sin exportar) -->
+      <div id="avisoBackup" class="aviso-backup hidden"></div>
+
+      <section id="view-dashboard" class="view active">
+        <h2>Dashboard</h2>
+        <div class="cards-resumen">
+          <div class="card card-vencido"><span class="card-num" id="countVencidos">0</span><span class="card-label">Vencidos</span></div>
+          <div class="card card-proximo"><span class="card-num" id="countProximos">0</span><span class="card-label">Próximos</span></div>
+        </div>
+        <h3>Pendientes</h3>
+        <div id="listaProximos" class="lista-items"></div>
+      </section>
+
+      <section id="view-categorias" class="view">
+        <div id="nivelCategorias">
+          <div class="view-header">
+            <div>
+              <h2>Categorías</h2>
+              <p style="color:var(--muted);font-size:13px">Agrupá tus bienes. Tocá para ver, tocá ✎ para editar.</p>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn" id="btnReordenar" style="display:none">☰ Reordenar</button>
+              <button class="btn btn-primary" id="btnNuevaCategoria">＋ Nueva categoría</button>
+            </div>
+          </div>
+          <div id="gridCategorias" class="grid-categorias"></div>
+        </div>
+
+        <div id="panelElementos" class="panel nivel hidden">
+          <div class="panel-header">
+            <button class="btn btn-small" id="btnCerrarPanelElementos">← Volver a Categorías</button>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <h3 id="tituloCategoriaSeleccionada" style="margin:0"></h3>
+              <button class="btn btn-small" id="btnEditarCategoria">Editar</button>
+              <button class="btn btn-small btn-danger" id="btnEliminarCategoria">Eliminar</button>
+            </div>
+          </div>
+          <div class="view-header" style="margin-top:14px">
+            <h4>Elementos</h4>
+            <button class="btn btn-primary btn-small" id="btnNuevoElemento">＋ Elemento</button>
+          </div>
+          <div id="listaElementos" class="lista-items"></div>
+        </div>
+      </section>
+
+      <section id="view-ajustes" class="view">
+        <h2>Ajustes</h2>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Copias portables. Todo queda guardado solo en este dispositivo.</p>
+        <div class="ajustes-grid">
+          <div class="ajuste-card">
+            <h3>Exportar copia</h3>
+            <p>Descargá un archivo <code>.json</code> con tus datos para guardarlo o pasarlo a otra versión de Memento.</p>
+            <button class="btn btn-primary" id="btnExportarBackup">⬇ Exportar ahora</button>
+            <div id="msgBackupExport" class="msg"></div>
+          </div>
+          <div class="ajuste-card">
+            <h3>Restaurar</h3>
+            <p>Elegí un archivo <code>.json</code> para volver a un estado anterior. Pide confirmación antes de sobrescribir.</p>
+            <button class="btn btn-warning" id="btnRestaurarBackup">↺ Elegir y restaurar</button>
+            <div id="msgBackupRestore" class="msg"></div>
+          </div>
+        </div>
+        <div class="info-box" style="margin-top:18px">
+          <h4>Dónde viven tus datos</h4>
+          <p>Esta versión guarda todo en el <strong>almacenamiento del navegador (IndexedDB)</strong> de este dispositivo. No hay servidores, ni cuentas, ni sincronización: la app funciona sin conexión y nada sale del teléfono.</p>
+        </div>
+        <div class="info-box" style="margin-top:18px">
+          <h4>Información</h4>
+          <div id="infoAlmacenamiento">
+            <p>Cargando…</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-busqueda" class="view">
+        <h2>Búsqueda</h2>
+        <p id="textoBusqueda" style="color:var(--muted)"></p>
+        <div id="resultadosBusqueda" class="lista-items" style="margin-top:12px"></div>
+        <button class="btn" id="btnCerrarBusqueda" style="margin-top:14px">← Volver</button>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav" id="bottomNav">
+    <div class="nav-group">
+      <button class="nav-btn active" data-view="dashboard" aria-label="Dashboard">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-btn" data-view="categorias" aria-label="Categorías">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+        <span>Categorías</span>
+      </button>
+      <button class="nav-btn" data-view="ajustes" aria-label="Configuración">
+        <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        <span>Ajustes</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- FAB rápido -->
+  <button class="fab" id="fabQuick" title="Agregar rápido">＋</button>
+
+  <!-- Modal genérico -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitulo"></h3>
+        <button class="modal-close" id="modalCerrar">×</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn" id="modalCancelar">Cancelar</button>
+        <button class="btn btn-primary" id="modalConfirmar">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalDetalle" class="modal hidden">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h3 id="detalleTitulo"></h3>
+        <button class="modal-close" id="detalleCerrar">×</button>
+      </div>
+      <div id="detalleBody" class="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn" id="detalleCerrar2">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hoja completa para crear/editar (evita problemas con el teclado virtual) -->
+  <div id="sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="sheetTitulo">
+    <div class="sheet-header">
+      <h3 id="sheetTitulo"></h3>
+      <button type="button" class="modal-close" id="sheetCerrar" aria-label="Cerrar">×</button>
+    </div>
+    <div id="sheetBody" class="sheet-body"></div>
+    <div class="sheet-footer">
+      <button type="button" class="btn" id="sheetCancelar">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="sheetGuardar">Guardar</button>
+    </div>
+  </div>
+
+  <!-- Menú rápido FAB -->
+  <div id="fabMenu" class="hidden" style="position:fixed;right:18px;bottom:110px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);padding:8px;display:flex;flex-direction:column;gap:6px;z-index:30;min-width:190px">
+    <button class="btn btn-small" id="fabAddCat" style="justify-content:flex-start">＋ Nueva categoría</button>
+    <button class="btn btn-small btn-primary" id="fabAddElem" style="justify-content:flex-start">＋ Nuevo elemento</button>
+  </div>
+
+  <script src="data-mobile.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./service-worker.js').catch(function (err) {
+          console.warn('Service Worker no registrado:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
