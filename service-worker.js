@@ -11,7 +11,7 @@
  * propios de la app).
  */
 
-const NOMBRE_CACHE = 'memento-movil-v2';
+const NOMBRE_CACHE = 'memento-movil-v3';
 
 // Archivos de la app. Se resuelven relativos al script del SW
 // (por eso './' es la carpeta web-movil aunque esté en una subruta).
